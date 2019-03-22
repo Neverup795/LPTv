@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .main {
+            border: beige solid 1px;
+            width: 1000px;
+            margin: 0 auto;
+        }
+
+        .show {
+            width: 95%;
+            min-height: 50px;
+            margin: 0 auto;
+        }
+
+        .text {
+            width: 100%;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+<div class="main">
+    <div>
+        <input type="submit" id="croom" value="创建房间"/>
+        <input type="number" id="room"/>
+        <input type="submit" id="eroom" value="进入房间"/>
+    </div>
+    <div id="content" class="show">
+    </div>
+    <div>
+        <input type="text" id="msgtext"/>
+        <input type="submit" id="send"/>
+    </div>
+</div>
+</body>
+<script src="jquery-3.3.1.min.js"></script>
+<script src="record.js"></script>
+<script>
+    kdrec.initWebsoket("ws://192.168.8.50:8080/websorket/");
+    //接收到消息
+    BUSNESS.ROOM_MSG = function reMsg(msg) {
+        var txt = "";
+        if (msg.id === kdrec.getToken()) { //自己
+            txt = '<div class="text" style="text-align: right;"><span style="color: darkred">' + msg.name + '</span>' + msg.msg + '</div>';
+        } else {
+            txt = '<div class="text" style="text-align: left;width: 70%"><span style="color: darkblue">' + msg.name + ':</span>' + msg.msg + '</div>';
+        }
+        $("#content").append(txt)
+    };
+    //新用户进入
+    BUSNESS.ENTER_ROOM = function (msg) {
+        if (msg.id !== kdrec.getToken()) {
+            $("#content").append('<div class="text" style="text-align: center;width: 100%;color: #aa09;">' + msg.name + '进入房间</div>')
+        }
+    };
+    $("#croom").click(function () {
+        kdrec.createRoom();
+    });
+    $("#send").click(function () {
+        var msg = $("#msgtext").val()
+        kdrec.socket.send(msg || "")
+    });
+    $("#eroom").click(function () {
+        var roomid = $("#room").val();
+        kdrec.enterRoom(roomid)
+    })
+</script>
+</html>
